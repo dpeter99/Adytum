@@ -1,0 +1,22 @@
+name: personal
+description: Personal profile
+inherit: "base"
+modules:
+  enabled:
+    - 010-host-docker
+    - 111-chrome.install
+packages:
+  copr: []
+  install:
+    - gcc
+    - gcc-c++
+    - cmake
+    - ninja-build
+    - SDL2
+    - SDL2-devel
+    - vulkan-tools
+    - vulkan-loader-devel
+    - vulkan-validation-layers-devel
+    - vulkan-validation-layers
+    - kubernetes-client
+    - helm

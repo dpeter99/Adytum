@@ -1,0 +1,24 @@
+name: base
+description: Base profile with common packages and modules
+modules:
+  enabled:
+    - 110-nvm
+packages:
+  copr:
+    - atim/lazygit
+    - atim/lazydocker
+  install:
+    - wl-clipboard
+    - gedit
+    - git
+    - git-lfs
+    - git-email
+    - gh
+    - lazygit
+    - lazydocker
+    - htop
+    - curl
+    - wget
+    - jq
+    - yq
+    - kitty

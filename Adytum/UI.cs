@@ -63,7 +63,7 @@ static class UI
         
     public static void Debug(string message)
     {
-        Console.ForegroundColor = ConsoleColor.DarkGray;
+        Console.ForegroundColor = ConsoleColor.DarkYellow;
         Console.WriteLine($"DEBUG: {message}");
         Console.ResetColor();
     }

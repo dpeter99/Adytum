@@ -19,7 +19,7 @@ public class ConsoleAppHost: IHost
         _host.Dispose();
     }
 
-    public void Start(string[] args)
+    public async Task Start(string[] args)
     {
         var a = _parser.Parse(args);
 
@@ -28,7 +28,7 @@ public class ConsoleAppHost: IHost
             Console.WriteLine(string.Join(Environment.NewLine, a.Errors));
         }
         else 
-            a.Invoke();
+            await a.InvokeAsync();
     }
     
     public Task StartAsync(CancellationToken cancellationToken = new CancellationToken())

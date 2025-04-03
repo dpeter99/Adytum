@@ -3,7 +3,7 @@ namespace ConfigurationManager;
 /// <summary>
 /// Manages environment variables and paths
 /// </summary>
-class EnvironmentManager
+public class EnvironmentManager
 {
     public string ScriptDir { get; }
     public string ConfDir { get; }

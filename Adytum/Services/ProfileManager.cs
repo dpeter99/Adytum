@@ -6,7 +6,7 @@ namespace ConfigurationManager;
 /// <summary>
 /// Manages profile loading and inheritance
 /// </summary>
-class ProfileManager
+public class ProfileManager
 {
     private readonly EnvironmentManager _env;
         

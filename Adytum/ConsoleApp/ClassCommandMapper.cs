@@ -21,7 +21,7 @@ public class ClassCommandMapper
             return option;
         }).ToList().ForEach(option => c.AddOption(option));
             
-        c.SetHandler((context =>
+        c.SetHandler(async context =>
         {
             var h = context.BindingContext.GetService<IHost>();
             var instance = Activator.CreateInstance(type);
@@ -42,8 +42,8 @@ public class ClassCommandMapper
                 return null;
             }).ToArray();
             
-            method.Invoke(instance, args);
-        }));
+            await (method.Invoke(instance, args) as Task<int>);
+        });
         return c;
     }
 

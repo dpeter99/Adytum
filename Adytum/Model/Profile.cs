@@ -3,7 +3,7 @@ namespace ConfigurationManager;
 /// <summary>
 /// Represents a configuration profile
 /// </summary>
-class Profile
+public class Profile
 {
     public string Name { get; set; }
     public string Description { get; set; }

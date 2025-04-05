@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 
 namespace ConfigurationManager.ConsoleApp;
 
@@ -25,6 +26,9 @@ public class ConsoleAppHostBuilder : IHostApplicationBuilder
     public ConsoleAppHostBuilder(HostApplicationBuilder hostBuilder)
     {
         _hostBuilder = hostBuilder;
+
+        IConfigurationBuilder builder = _hostBuilder.Configuration;
+        builder.Add(new CommandLineConfigSource());
     }
     
     public void AddHelpCommand()
@@ -87,4 +91,47 @@ public class ConsoleAppHostBuilder : IHostApplicationBuilder
         return new ConsoleAppHost(host, _commandLineBuilder.Build());
     }
     
+}
+
+public class CommandLineConfigSource : IConfigurationSource
+{
+    public IConfigurationProvider Build(IConfigurationBuilder builder)
+    {
+        Console.WriteLine("CommandLineConfigSource.Build()");
+        return new CommandLineConfigProvider(builder);
+    }
+}
+
+public class CommandLineConfigProvider : IConfigurationProvider
+{
+    public CommandLineConfigProvider(IConfigurationBuilder builder)
+    {
+        Console.WriteLine("CommandLineConfigProvider.Build()");
+    }
+
+    public bool TryGet(string key, out string? value)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void Set(string key, string? value)
+    {
+        throw new NotImplementedException();
+    }
+
+    public IChangeToken GetReloadToken()
+    {
+        throw new NotImplementedException();
+        return new ConfigurationReloadToken();
+    }
+
+    public void Load()
+    {
+        throw new NotImplementedException();
+    }
+
+    public IEnumerable<string> GetChildKeys(IEnumerable<string> earlierKeys, string? parentPath)
+    {
+        throw new NotImplementedException();
+    }
 }

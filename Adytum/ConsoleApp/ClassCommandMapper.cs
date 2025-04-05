@@ -1,4 +1,5 @@
 using System.CommandLine;
+using System.CommandLine.Hosting;
 using System.Reflection;
 using Cocona;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,7 +25,7 @@ public class ClassCommandMapper
         c.SetHandler(async context =>
         {
             var h = context.BindingContext.GetService<IHost>();
-            var instance = Activator.CreateInstance(type);
+            var instance = context.GetHost().Services.GetService(type);
 
             var parameters = method.GetParameters();
             var args = parameters.Select(p => 

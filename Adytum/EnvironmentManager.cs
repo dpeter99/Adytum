@@ -11,12 +11,12 @@ public class EnvironmentManager
     public bool Debug { get; }
     public Dictionary<string, string> EnvironmentVariables { get; }
         
-    public EnvironmentManager(CommandLineOptions options)
+    public EnvironmentManager()
     {
         ScriptDir = Directory.GetCurrentDirectory();
         ConfDir = Path.Combine(ScriptDir, "conf");
         LibDir = Path.Combine(ScriptDir, "lib");
-        Debug = options.Debug;
+        Debug = false;
             
         // Setup environment variables for shell scripts
         EnvironmentVariables = new Dictionary<string, string>

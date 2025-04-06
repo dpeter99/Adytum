@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using Cocona;
 using ConfigurationManager.Commands;
+using ConfigurationManager.ConsoleApp;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -20,9 +21,14 @@ namespace ConfigurationManager
             });
             
             builder.Services.AddSingleton(typeof(ProfileManager));
-            
-            builder.AddHelpCommand();
-            builder.AddCommand<SetupCommand>();
+
+            builder.AddGlobalOptions<GlobalOptions>(args);
+
+            var options = builder.Configuration.GetRequiredSection("GlobalOptions").Get<GlobalOptions>();
+            if (options.Experimental)
+            {
+                builder.Services.AddSingleton<TestExperiment>();
+            }
             
             var host = builder.Build();
             
@@ -31,9 +37,14 @@ namespace ConfigurationManager
         }
     }
 
-    public class CommandLineOptions
+    public class GlobalOptions
     {
+        [Option('d')]
         public bool Debug { get; set; }
-        public string Profile { get; set; }
+        public bool Verbose { get; set; }
+        public bool Quiet { get; set; }
+        public bool Experimental { get; set; }
     }
+    
+    public class TestExperiment{}
 }

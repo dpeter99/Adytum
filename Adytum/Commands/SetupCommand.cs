@@ -3,23 +3,22 @@ using Microsoft.Extensions.Configuration;
 
 namespace ConfigurationManager.Commands;
 
-public class SetupCommand
+public class SetupCommand(ProfileManager profileManager, UI ui)
 {
-    ProfileManager _profileManager;
-
-    public SetupCommand(ProfileManager profileManager)
-    {
-        _profileManager = profileManager;
-    }
+    ProfileManager _profileManager = profileManager;
 
 
     [Command("setup",Description = "Sets up a new profile")]
     public async Task<int> Run (
         [Option("debug", ['d'], Description = "Enable debug output")] bool debug, 
-        [Option("profile", ['p'], Description = "Specify the profile to use")] string? profileName
+        [Option("profile", ['p'], Description = "Specify the profile to use")] string profileName
         )
     {
-            
+        
+        ui.ShowBanner("Adytum Setup");
+        
+        await _profileManager.LoadProfileAsync(profileName);
+        
         return 0;
     }
     

@@ -28,12 +28,35 @@ public class ConsoleAppHostBuilder : IHostApplicationBuilder
         _hostBuilder = hostBuilder;
     }
 
-    public void AddGlobalOptions<T>(string[] args) where T : new()
+    public void AddGlobalOptions<T>(string[] args) where T : class, new()
     {
         IConfigurationBuilder builder = _hostBuilder.Configuration;
         T val = new T();
         
         builder.Add(new CommandLineConfigSource<T>(typeof(T).Name,args, _commandLineBuilder.Command));
+
+        _hostBuilder.Services.AddOptions<T>(typeof(T).Name);
+    }
+    
+    public void AddCommand<TCommand>() where TCommand : class
+    {
+        var type = typeof(TCommand);
+
+        _hostBuilder.Services.AddTransient<TCommand>();
+        
+        var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+            .ToList().Select(info =>
+            {
+                return (info, attr: info.GetCustomAttribute<CommandAttribute>());
+            })
+            .Where((i, _) => i.attr is not null);
+        
+        foreach (var (method, attr) in methods)
+        {
+            var c = ClassCommandMapper.CreateCommand(attr, method, type);
+
+            _commandLineBuilder.Command.Add(c);
+        }
     }
     
     #region IHostApplicationBuilder
@@ -68,7 +91,6 @@ public class ConsoleAppHostBuilder : IHostApplicationBuilder
         
         return new ConsoleAppHost(host, _commandLineBuilder.Build());
     }
-    
 }
 
 public class Reflector

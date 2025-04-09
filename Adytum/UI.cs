@@ -1,18 +1,20 @@
+using Microsoft.Extensions.Options;
+using Spectre.Console;
+
 namespace ConfigurationManager;
 
 /// <summary>
 /// UI formatting helper methods (replacing utils.sh/gum functionality)
 /// </summary>
-static class UI
+public class UI(IOptions<GlobalOptions> opts)
 {
-    public static void ShowBanner(string message)
+    
+    
+    public void ShowBanner(string message)
     {
-        Console.ForegroundColor = ConsoleColor.Magenta;
-        Console.WriteLine(new string('=', Console.WindowWidth - 1));
-        Console.WriteLine(CenterText(message));
-        Console.WriteLine(new string('=', Console.WindowWidth - 1));
-        Console.ResetColor();
-        Console.WriteLine();
+        var panel = new Panel(message);
+        panel.Width = 100;
+        AnsiConsole.Write(panel);
     }
         
     public static void ShowSuccess(string message)

@@ -20,6 +20,9 @@ namespace ConfigurationManager
                 DisableDefaults = true,
             });
             
+            builder.Services.AddSingleton<UI>();
+
+            builder.Services.AddSingleton<EnvironmentManager>();
             builder.Services.AddSingleton(typeof(ProfileManager));
 
             builder.AddGlobalOptions<GlobalOptions>(args);
@@ -29,6 +32,8 @@ namespace ConfigurationManager
             {
                 builder.Services.AddSingleton<TestExperiment>();
             }
+            
+            builder.AddCommand<SetupCommand>();
             
             var host = builder.Build();
             

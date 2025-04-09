@@ -25,7 +25,7 @@ public class ClassCommandMapper
         c.SetHandler(async context =>
         {
             var h = context.BindingContext.GetService<IHost>();
-            var instance = context.GetHost().Services.GetService(type);
+            var instance = context.GetHost().Services.GetRequiredService(type);
 
             var parameters = method.GetParameters();
             var args = parameters.Select(p => 

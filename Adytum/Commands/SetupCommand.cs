@@ -17,7 +17,7 @@ public class SetupCommand(ProfileManager profileManager, UI ui)
         
         ui.ShowBanner("Adytum Setup");
         
-        await _profileManager.LoadProfileAsync(profileName);
+        var profile = await _profileManager.LoadProfileAsync(profileName);
         
         return 0;
     }

@@ -31,11 +31,11 @@ public class ConsoleAppHostBuilder : IHostApplicationBuilder
     public void AddGlobalOptions<T>(string[] args) where T : class, new()
     {
         IConfigurationBuilder builder = _hostBuilder.Configuration;
-        T val = new T();
         
         builder.Add(new CommandLineConfigSource<T>(typeof(T).Name,args, _commandLineBuilder.Command));
 
-        _hostBuilder.Services.AddOptions<T>(typeof(T).Name);
+        //_hostBuilder.Services.AddOptions<T>(typeof(T).Name);
+        _hostBuilder.Services.Configure<T>(_hostBuilder.Configuration.GetSection(typeof(T).Name));
     }
     
     public void AddCommand<TCommand>() where TCommand : class

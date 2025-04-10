@@ -9,10 +9,12 @@ namespace ConfigurationManager;
 public class ProfileManager
 {
     private readonly EnvironmentManager _env;
-        
-    public ProfileManager(EnvironmentManager env)
+    private readonly UI _ui;
+
+    public ProfileManager(EnvironmentManager env, UI ui)
     {
         _env = env;
+        _ui = ui;
     }
         
     public async Task<Profile> LoadProfileAsync(string profileName)
@@ -31,12 +33,9 @@ public class ProfileManager
             
         UI.Section($"Setting up profile: {profile.Name}");
         UI.Info($"Description: {profile.Description}");
-            
-        if (_env.Debug)
-        {
-            UI.Debug($"Effective profile content: {System.Text.Json.JsonSerializer.Serialize(profile, new System.Text.Json.JsonSerializerOptions { WriteIndented = true })}");
-        }
-            
+        
+        _ui.Debug($"Effective profile content: {System.Text.Json.JsonSerializer.Serialize(profile, new System.Text.Json.JsonSerializerOptions { WriteIndented = true })}");
+        
         _env.SetProfileEnvironment(profile);
             
         return profile;

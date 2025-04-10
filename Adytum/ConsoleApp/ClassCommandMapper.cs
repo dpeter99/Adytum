@@ -24,7 +24,6 @@ public class ClassCommandMapper
             
         c.SetHandler(async context =>
         {
-            var h = context.BindingContext.GetService<IHost>();
             var instance = context.GetHost().Services.GetRequiredService(type);
 
             var parameters = method.GetParameters();
@@ -42,8 +41,15 @@ public class ClassCommandMapper
                 }
                 return null;
             }).ToArray();
+
+            var result = method.Invoke(instance, args);
             
-            await (method.Invoke(instance, args) as Task<int>);
+            if(result is null) return;
+            if (result is Task task)
+            {
+                await task;
+                return;
+            }
         });
         return c;
     }

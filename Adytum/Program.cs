@@ -2,8 +2,12 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Adytum.Services;
+using Adytum.Services.Installer.Package;
+using Adytum.Services.Installer.Repository;
 using ConfigurationManager.Commands;
 using ConfigurationManager.ConsoleApp;
+using ConfigurationManager.Installer.Repository;
 using ConfigurationManager.Utils;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,6 +37,11 @@ namespace ConfigurationManager
 
             builder.Services.AddScoped<IPackageManagerFactory, PackageManagerFactory>();
             builder.Services.AddKeyedScoped<IPackageManager, DnfPackageManager>(nameof(DnfPackageManager));
+            
+            builder.Services.AddScoped<IRepositoryManagerFactory, RepositoryManagerFactory>();
+            builder.Services.AddKeyedScoped<IRepositoryManager, FedoraRepositoryManager>(nameof(FedoraRepositoryManager));
+            
+            builder.Services.AddScoped<IOperatingSystemDetector, LinuxOperatingSystemDetector>();
             
             builder.Services.AddScoped<CliWrapper>();
             

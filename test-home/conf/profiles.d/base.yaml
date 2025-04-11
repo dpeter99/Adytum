@@ -24,3 +24,4 @@ packages:
     - kitty
     - fish
     - zsh
+    - icu

@@ -1,59 +1,8 @@
-using CliWrap;
-using CliWrap.Buffered;
-using Microsoft.Extensions.Logging;
-using Spectre.Console;
-using System.Runtime.InteropServices;
+using ConfigurationManager;
 using ConfigurationManager.Utils;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging;
 
-namespace ConfigurationManager;
-
-/// <summary>
-/// Abstract package manager interface to support multiple distros
-/// </summary>
-public interface IPackageManager
-{
-    Task<bool> InstallPackagesAsync(IEnumerable<string> packages);
-    Task<bool> EnableRepositoryAsync(string repository);
-}
-
-public enum PackageManagerType
-{
-    Debian,
-    Fedora,
-    Arch,
-    Unknown
-}
-
-public interface IPackageManagerFactory
-{
-    IPackageManager Create();
-}
-
-/// <summary>
-/// Factory to create the appropriate package manager based on the system
-/// </summary>
-public class PackageManagerFactory(
-    ILogger<PackageManagerFactory> logger,
-    IServiceProvider serviceProvider
-    ) : IPackageManagerFactory
-{
-    public IPackageManager Create()
-    {
-        var type = PackageManagerType.Fedora;
-        return type switch
-        {
-            PackageManagerType.Arch => throw new NotImplementedException(),
-            PackageManagerType.Debian => throw new NotImplementedException(),
-            PackageManagerType.Fedora => serviceProvider.GetRequiredKeyedService<IPackageManager>(
-                nameof(DnfPackageManager)),
-            PackageManagerType.Unknown => throw new PlatformNotSupportedException(
-                "Current platform is not supported for package management"),
-            _ => throw new NotImplementedException($"Package manager for {type} is not implemented")
-        };
-    }
-}
+namespace Adytum.Services.Installer.Package;
 
 /// <summary>
 /// DNF package manager implementation for Fedora-based systems
@@ -61,7 +10,7 @@ public class PackageManagerFactory(
 public class DnfPackageManager(
     CliWrapper cli,
     ILogger<DnfPackageManager> logger
-    )
+)
     : IPackageManager
 {
 

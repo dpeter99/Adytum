@@ -22,6 +22,9 @@ public class ProfileManager(EnvironmentManager env)
             
         var profile = await LoadProfileWithInheritanceAsync(profilePath);
             
+        // Convert legacy repository formats
+        ProfileConverter.ConvertLegacyRepositories(profile);
+        
         UI.Section($"Setting up profile: {profile.Name}");
         UI.Info($"Description: {profile.Description}");
         

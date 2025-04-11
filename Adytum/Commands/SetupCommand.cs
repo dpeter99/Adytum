@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace ConfigurationManager.Commands;
 
-public class SetupCommand(ProfileManager profileManager, UI ui)
+public class SetupCommand(ProfileManager profileManager, IPackageManagerFactory factory)
 {
     ProfileManager _profileManager = profileManager;
 
@@ -15,15 +15,12 @@ public class SetupCommand(ProfileManager profileManager, UI ui)
         )
     {
         
-        ui.ShowBanner("Adytum Setup");
+        UI.ShowBanner("Adytum Setup");
         
         var profile = await _profileManager.LoadProfileAsync(profileName);
+
+        await factory.Create().InstallPackagesAsync(profile.Packages.Install);
         
         return 0;
-    }
-    
-    public void Test()
-    {
-        Console.WriteLine("Test");
     }
 }

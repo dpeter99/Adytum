@@ -3,22 +3,54 @@ using Spectre.Console;
 
 namespace ConfigurationManager;
 
+public enum PrintLevel
+{
+    /// <summary>
+    /// Anything and everything you might want to know about
+    /// a running block of code.
+    /// </summary>
+    Verbose,
+
+    /// <summary>
+    /// Internal system events that aren't necessarily
+    /// observable from the outside.
+    /// </summary>
+    Debug,
+
+    /// <summary>
+    /// The lifeblood of operational intelligence - things
+    /// happen.
+    /// </summary>
+    Information,
+
+    /// <summary>
+    /// Service is degraded or endangered.
+    /// </summary>
+    Warning,
+
+    /// <summary>
+    /// Functionality is unavailable, invariants are broken
+    /// or data is lost.
+    /// </summary>
+    Error,
+
+    /// <summary>
+    /// If you have a pager, it goes off when one of these
+    /// occurs.
+    /// </summary>
+    Fatal
+}
+
 /// <summary>
 /// UI formatting helper methods using Spectre.Console for rich terminal output
 /// </summary>
-public class UI
+public static class UI
 {
-    private readonly GlobalOptions _options;
-
-    public UI(IOptions<GlobalOptions> options)
-    {
-        _options = options.Value;
-    }
 
     /// <summary>
     /// Display a styled banner with the given message
     /// </summary>
-    public void ShowBanner(string message)
+    public static void ShowBanner(string message)
     {
         var panel = new Panel(Markup.Escape(message))
             .Border(BoxBorder.Double)
@@ -75,40 +107,43 @@ public class UI
         AnsiConsole.MarkupLine($"[blue]•[/] [blue]{Markup.Escape(message)}[/]");
     }
 
+    public static void PrintLog(PrintLevel level, string message)
+    {
+        var line = level switch
+        {
+            PrintLevel.Verbose => $"[grey] {Markup.Escape(message)}[/]",
+            PrintLevel.Debug => $"[grey42]DEBUG: {Markup.Escape(message)}[/]",
+            PrintLevel.Information => $"[white] {Markup.Escape(message)}[/]",
+            PrintLevel.Warning => $"[yellow]! WARNING:[/] [yellow]{Markup.Escape(message)}[/]",
+            PrintLevel.Error => $"[red]✗ ERROR:[/] [red]{Markup.Escape(message)}[/]",
+            PrintLevel.Fatal => $"[red1] {Markup.Escape(message)}[/]",
+            _ => $"{Markup.Escape(level.ToString())} {Markup.Escape(message)}"
+        };
+
+        AnsiConsole.MarkupLine(line);
+    }
+    
+    /// <summary>
+    /// Display debug information (only if debug is enabled)
+    /// </summary>
+    public static void Debug(string message) => PrintLog(PrintLevel.Debug, message);
+    
     /// <summary>
     /// Display information text
     /// </summary>
-    public static void Info(string message)
-    {
-        AnsiConsole.MarkupLine($"[grey]ℹ {Markup.Escape(message)}[/]");
-    }
+    public static void Info(string message) => PrintLog(PrintLevel.Information, message);
 
     /// <summary>
     /// Display a warning message
     /// </summary>
-    public static void Warning(string message)
-    {
-        AnsiConsole.MarkupLine($"[yellow]! WARNING:[/] [yellow]{Markup.Escape(message)}[/]");
-    }
+    public static void Warning(string message) => PrintLog(PrintLevel.Warning, message);
 
     /// <summary>
     /// Display an error message
     /// </summary>
-    public static void Error(string message)
-    {
-        AnsiConsole.MarkupLine($"[red]✗ ERROR:[/] [red]{Markup.Escape(message)}[/]");
-    }
+    public static void Error(string message) => PrintLog(PrintLevel.Error, message);
 
-    /// <summary>
-    /// Display debug information (only if debug is enabled)
-    /// </summary>
-    public void Debug(string message)
-    {
-        if (_options.Debug)
-        {
-            AnsiConsole.MarkupLine($"[grey42]DEBUG: {Markup.Escape(message)}[/]");
-        }
-    }
+
 
     /// <summary>
     /// Display a module header
@@ -145,11 +180,11 @@ public class UI
     /// <summary>
     /// Run a task with a spinner (async version)
     /// </summary>
-    public static async Task<T> SpinnerAsync<T>(string message, Func<Task<T>> action)
+    public static async Task<T> SpinnerAsync<T>(string message, Func<StatusContext, Task<T>> action)
     {
         return await AnsiConsole.Status()
             .Spinner(Spectre.Console.Spinner.Known.Dots)
-            .StartAsync(message, async ctx => await action());
+            .StartAsync(message, async ctx => await action(ctx));
     }
 
     /// <summary>

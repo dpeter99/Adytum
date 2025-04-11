@@ -6,22 +6,13 @@ namespace ConfigurationManager;
 /// <summary>
 /// Manages profile loading and inheritance
 /// </summary>
-public class ProfileManager
+public class ProfileManager(EnvironmentManager env)
 {
-    private readonly EnvironmentManager _env;
-    private readonly UI _ui;
-
-    public ProfileManager(EnvironmentManager env, UI ui)
-    {
-        _env = env;
-        _ui = ui;
-    }
-        
     public async Task<Profile> LoadProfileAsync(string profileName)
     {
         UI.Section($"Loading profile: {profileName}");
             
-        var profilePath = Path.Combine(_env.ConfDir, "profiles.d", $"{profileName}.yaml");
+        var profilePath = Path.Combine(env.ConfDir, "profiles.d", $"{profileName}.yaml");
             
         if (!File.Exists(profilePath))
         {
@@ -34,9 +25,9 @@ public class ProfileManager
         UI.Section($"Setting up profile: {profile.Name}");
         UI.Info($"Description: {profile.Description}");
         
-        _ui.Debug($"Effective profile content: {System.Text.Json.JsonSerializer.Serialize(profile, new System.Text.Json.JsonSerializerOptions { WriteIndented = true })}");
+        UI.Debug($"Effective profile content: {System.Text.Json.JsonSerializer.Serialize(profile, new System.Text.Json.JsonSerializerOptions { WriteIndented = true })}");
         
-        _env.SetProfileEnvironment(profile);
+        env.SetProfileEnvironment(profile);
             
         return profile;
     }
@@ -55,7 +46,7 @@ public class ProfileManager
         {
             UI.Info($"Profile {profile.Name} inherits from: {profile.Inherit}");
                 
-            var parentPath = Path.Combine(_env.ConfDir, "profiles.d", $"{profile.Inherit}.yaml");
+            var parentPath = Path.Combine(env.ConfDir, "profiles.d", $"{profile.Inherit}.yaml");
                 
             if (!File.Exists(parentPath))
             {

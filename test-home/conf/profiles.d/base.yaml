@@ -22,3 +22,5 @@ packages:
     - jq
     - yq
     - kitty
+    - fish
+    - zsh

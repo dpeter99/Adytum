@@ -1,106 +1,148 @@
 using CliWrap;
+using CliWrap.Buffered;
+using Microsoft.Extensions.Logging;
+using Spectre.Console;
+using System.Runtime.InteropServices;
+using ConfigurationManager.Utils;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace ConfigurationManager;
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Text;
-using System.Threading.Tasks;
+/// <summary>
+/// Abstract package manager interface to support multiple distros
+/// </summary>
+public interface IPackageManager
+{
+    Task<bool> InstallPackagesAsync(IEnumerable<string> packages);
+    Task<bool> EnableRepositoryAsync(string repository);
+}
+
+public enum PackageManagerType
+{
+    Debian,
+    Fedora,
+    Arch,
+    Unknown
+}
+
+public interface IPackageManagerFactory
+{
+    IPackageManager Create();
+}
 
 /// <summary>
-/// Manages package installation and COPR repositories
+/// Factory to create the appropriate package manager based on the system
 /// </summary>
-class PackageManager
+public class PackageManagerFactory(
+    ILogger<PackageManagerFactory> logger,
+    IServiceProvider serviceProvider
+    ) : IPackageManagerFactory
 {
-    private readonly EnvironmentManager _env;
-
-    public PackageManager(EnvironmentManager env)
+    public IPackageManager Create()
     {
-        _env = env;
+        var type = PackageManagerType.Fedora;
+        return type switch
+        {
+            PackageManagerType.Arch => throw new NotImplementedException(),
+            PackageManagerType.Debian => throw new NotImplementedException(),
+            PackageManagerType.Fedora => serviceProvider.GetRequiredKeyedService<IPackageManager>(
+                nameof(DnfPackageManager)),
+            PackageManagerType.Unknown => throw new PlatformNotSupportedException(
+                "Current platform is not supported for package management"),
+            _ => throw new NotImplementedException($"Package manager for {type} is not implemented")
+        };
     }
+}
 
-    /// <summary>
-    /// Run dnf copr enable command
-    /// </summary>
-    private async Task<bool> EnableDnfCoprAsync(string repo)
-    {
-        var result = await Cli.Wrap("dnf")
-            .WithArguments(["dnf", "enable", "-y", repo])
-            .ExecuteAsync();
-        
-        return result.ExitCode == 0;
-    }
+/// <summary>
+/// DNF package manager implementation for Fedora-based systems
+/// </summary>
+public class DnfPackageManager(
+    CliWrapper cli,
+    ILogger<DnfPackageManager> logger
+    )
+    : IPackageManager
+{
 
-    /// <summary>
-    /// Run dnf install command
-    /// </summary>
-    private async Task<bool> RunDnfInstallAsync(List<string> packages)
+    public async Task<bool> InstallPackagesAsync(IEnumerable<string> packages)
     {
-        // Create a temporary file with list of packages
+        if (!packages.Any())
+        {
+            logger.LogInformation("No packages provided");
+            return true;
+        }
+
         var packageList = string.Join(" ", packages);
-        var tempFile = Path.GetTempFileName();
-        File.WriteAllText(tempFile, packageList);
-
-        //UI.Spinner("Installing packages");
-
-        var startInfo = new ProcessStartInfo
-        {
-            FileName = "sudo",
-            Arguments = $"dnf install -y {packageList}",
-            UseShellExecute = false,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            CreateNoWindow = true
-        };
-
-        using var process = new Process { StartInfo = startInfo };
-
-        var outputTask = new TaskCompletionSource<string>();
-        var errorTask = new TaskCompletionSource<string>();
-
-        process.OutputDataReceived += (sender, args) =>
-        {
-            if (args.Data == null)
-            {
-                outputTask.SetResult(outputTask.Task.Result ?? string.Empty);
-            }
-            else
-            {
-                Console.WriteLine(args.Data);
-                outputTask.SetResult((outputTask.Task.Result ?? string.Empty) + args.Data + Environment.NewLine);
-            }
-        };
-
-        process.ErrorDataReceived += (sender, args) =>
-        {
-            if (args.Data == null)
-            {
-                errorTask.SetResult(errorTask.Task.Result ?? string.Empty);
-            }
-            else
-            {
-                Console.Error.WriteLine(args.Data);
-                errorTask.SetResult((errorTask.Task.Result ?? string.Empty) + args.Data + Environment.NewLine);
-            }
-        };
-
-        process.Start();
-        process.BeginOutputReadLine();
-        process.BeginErrorReadLine();
-
-        await process.WaitForExitAsync();
-
+        logger.LogInformation("Installing the following packages: " + packageList);
+        
         try
         {
-            File.Delete(tempFile);
+            return await UI.SpinnerAsync("Installing packages", async (ctx) =>
+            {
+                var result = await cli.ExecuteCommandStreamingAsync(
+                    "dnf", 
+                    new[] { "install", "-y" }.Concat(packages),
+                    UI.Info,
+                    UI.Info,
+                    requiresAdmin: true);
+                
+                if (result.Success)
+                {
+                    UI.Task("Successfully installed all packages");
+                    return true;
+                }
+                else
+                {
+                    logger.LogWarning("DNF install error: {Error}", result.StandardError);
+                    return false;
+                }
+            });
         }
-        catch
+        catch (Exception ex)
         {
-            // Ignore cleanup errors
+            logger.LogError(ex, $"Failed to install packages: {ex.Message}");
+            return false;
+        }
+    }
+
+    public async Task<bool> EnableRepositoryAsync(string repository)
+    {
+        if (string.IsNullOrWhiteSpace(repository))
+        {
+            UI.Warning("No repository specified");
+            return false;
         }
 
-        return process.ExitCode == 0;
+        UI.SubTask($"Enabling COPR repository: {repository}");
+        
+        try
+        {
+            return await UI.SpinnerAsync($"Enabling COPR repository: {repository}", async (_) =>
+            {
+                var result = await cli.ExecuteCommandAsync(
+                    "dnf", 
+                    new[] { "copr", "enable", "-y", repository },
+                    requiresAdmin: true);
+                
+                if (result.Success)
+                {
+                    UI.Task($"Enabled COPR repository: {repository}");
+                    return true;
+                }
+                else
+                {
+                    logger.LogWarning($"Failed to enable COPR repository: {repository} (Exit code: {result.ExitCode})");
+                    return false;
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, $"Failed to enable repository: {ex.Message}");
+            return false;
+        }
     }
+
+
 }

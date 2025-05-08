@@ -12,7 +12,8 @@ public class SetupCommand(
     ProfileManager profileManager,
     IPackageManagerFactory packageMgrFactory,
     IOperatingSystemDetector osDetector,
-    IRepositoryManagerFactory repositoryMgrFactory
+    IRepositoryManagerFactory repositoryMgrFactory,
+    ModuleExecutor moduleExecutor
     )
 {
     [Command("setup",Description = "Sets up a new profile")]
@@ -35,6 +36,8 @@ public class SetupCommand(
         await ProcessRepositoriesAsync(profile);
         
         await packageMgrFactory.Create().InstallPackagesAsync(profile.Packages.Install);
+
+        await moduleExecutor.ProcessModulesAsync(profile);
         
         return 0;
     }

@@ -8,6 +8,7 @@ using Adytum.Services.Installer.Repository;
 using ConfigurationManager.Commands;
 using ConfigurationManager.ConsoleApp;
 using ConfigurationManager.Installer.Repository;
+using ConfigurationManager.Serilog.Spectre;
 using ConfigurationManager.Utils;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -43,6 +44,8 @@ namespace ConfigurationManager
             
             builder.Services.AddScoped<IOperatingSystemDetector, LinuxOperatingSystemDetector>();
             
+            builder.Services.AddScoped<ModuleExecutor>();
+            
             builder.Services.AddScoped<CliWrapper>();
             
             builder.AddGlobalOptions<GlobalOptions>(args);
@@ -50,12 +53,14 @@ namespace ConfigurationManager
             builder.Services.AddSerilog(
                 (services, config) =>
                 {
-                    config.WriteTo.Spectre();
+                    //config.WriteTo.Spectre();
+                    //config.WriteTo.Console();
+                    config.WriteTo.Sink(new SpectreSink());
 
                     var opts = services.GetRequiredService<IOptions<GlobalOptions>>();
                     if (opts.Value.Debug)
                     {
-                        config.MinimumLevel.Debug();
+                        config.MinimumLevel.Verbose();
                     }
                     else
                     {

@@ -16,6 +16,8 @@ public class DnfPackageManager(
 
     public async Task<bool> InstallPackagesAsync(IEnumerable<string> packages)
     {
+        UI.Section("Installing dnf packages...");
+        
         if (!packages.Any())
         {
             logger.LogInformation("No packages provided");

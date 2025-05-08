@@ -1,14 +1,11 @@
 using System.CommandLine;
 using System.CommandLine.Builder;
-using System.CommandLine.Hosting;
 using System.Reflection;
-using Cocona;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Primitives;
 
 namespace ConfigurationManager.ConsoleApp;
 

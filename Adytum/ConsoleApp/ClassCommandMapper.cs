@@ -1,9 +1,7 @@
 using System.CommandLine;
 using System.CommandLine.Hosting;
 using System.Reflection;
-using Cocona;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 
 namespace ConfigurationManager.ConsoleApp;
 

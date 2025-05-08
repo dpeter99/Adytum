@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Options;
+
 namespace ConfigurationManager.Utils;
 
 using CliWrap;
@@ -8,13 +10,13 @@ using System.Text;
 /// <summary>
 /// Wrapper for CLI operations that supports dry run mode
 /// </summary>
-public class CliWrapper(ILogger<CliWrapper> logger)
+public class CliWrapper(ILogger<CliWrapper> logger, IOptions<GlobalOptions> options)
 {
 
     /// <summary>
     /// Enable or disable dry run mode
     /// </summary>
-    public bool DryRun { get; set; } = false;
+    private bool DryRun => options.Value.DryRun;
 
     /// <summary>
     /// Execute a command with the specified arguments
@@ -32,6 +34,21 @@ public class CliWrapper(ILogger<CliWrapper> logger)
             TimeSpan.FromHours(5),
             requiresAdmin
             );
+    }
+    
+    public async Task<CommandResult> ExecuteCommandAsync(
+        FileInfo command, 
+        IEnumerable<string> arguments, 
+        bool requiresAdmin = false)
+    {
+        return await ExecuteCommandAsyncImpl(
+            command.FullName,
+            arguments,
+            null,
+            null,
+            TimeSpan.FromHours(5),
+            requiresAdmin
+        );
     }
 
     /// <summary>
@@ -73,7 +90,7 @@ public class CliWrapper(ILogger<CliWrapper> logger)
             );
     }
     
-    internal async Task<CommandResult> ExecuteCommandAsyncImpl(
+    private async Task<CommandResult> ExecuteCommandAsyncImpl(
         string command,
         IEnumerable<string> arguments,
         Action<string>? stdoutCallback,
@@ -99,7 +116,7 @@ public class CliWrapper(ILogger<CliWrapper> logger)
         if (DryRun)
         {
             // In dry run mode, just log the command and return success
-            logger.LogInformation($"[DRY RUN] Would execute: {fullCommand}");
+            logger.LogInformation("[DRY RUN] Would execute: {fullCommand}", fullCommand);
             
             var result = new CommandResult
             {

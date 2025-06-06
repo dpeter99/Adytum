@@ -32,7 +32,9 @@ jobs:
         run: echo "version=$(minver)" >> $GITHUB_OUTPUT
 
       - name: Restore dependencies
-        run: dotnet restore Adytum/Adytum.csproj
+        run: |
+          dotnet restore Adytum/Adytum.csproj \
+          -p:PublishReadyToRun=true \
 
       - name: Build
         run: dotnet build Adytum/Adytum.csproj --configuration Release --no-restore /p:Version=${{ steps.minver.outputs.version }}

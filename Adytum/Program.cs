@@ -21,7 +21,6 @@ namespace ConfigurationManager
 {
     class Program
     {
-        
         static async Task Main(string[] args)
         {
             Log.Logger = new LoggerConfiguration()
@@ -69,9 +68,9 @@ namespace ConfigurationManager
                 });
             
             builder.AddCommand<SetupCommand>();
+            builder.AddCommand<VersionCommand>();
             
             var host = builder.Build();
-            
             
             await host.Start(args);
         }
@@ -83,7 +82,6 @@ namespace ConfigurationManager
         public bool Debug { get; set; }
         [Option("dry")]
         public bool DryRun { get; set; }
-        
         public bool Verbose { get; set; }
         public bool Quiet { get; set; }
         public bool Experimental { get; set; }

@@ -1,0 +1,91 @@
+name: Create Release
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+      artifact_name:
+        required: true
+        type: string
+        default: 'adytum-publish'
+    permissions:
+      contents: write
+      pull-requests: read
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.artifact_name }}
+          path: ./publish
+
+      - name: Generate changelog
+        id: changelog
+        uses: mikepenz/release-changelog-builder-action@v4
+        with:
+          configuration: |
+            {
+              "categories": [
+                {
+                  "title": "## 🚀 Features",
+                  "labels": ["feature", "enhancement"]
+                },
+                {
+                  "title": "## 🐛 Fixes",
+                  "labels": ["fix", "bug"]
+                },
+                {
+                  "title": "## 📦 Dependencies",
+                  "labels": ["dependencies"]
+                }
+              ],
+              "template": "#{{CHANGELOG}}\\n\\n<details>\\n<summary>Uncategorized</summary>\\n\\n#{{UNCATEGORIZED}}\\n</details>\\n\\n",
+              "pr_template": "- #{{NUMBER}} - {{TITLE}}",
+              "empty_template": "- No changes",
+              "max_tags_to_fetch": 500,
+              "max_pull_requests": 500,
+              "max_back_track_time_days": 365
+            }
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create checksum file
+        run: |
+          cd publish
+          sha256sum * > SHA256SUMS.txt
+          cd ..
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ inputs.version }}
+          name: Release v${{ inputs.version }}
+          body: |
+            ## Adytum v${{ inputs.version }}
+
+            ${{ steps.changelog.outputs.changelog }}
+
+            ## Checksums
+            ```
+            $(cat publish/SHA256SUMS.txt)
+            ```
+          files: |
+            ./publish/**
+          draft: false
+          prerelease: false
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

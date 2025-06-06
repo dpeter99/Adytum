@@ -10,9 +10,6 @@ on:
         required: true
         type: string
         default: 'adytum-publish'
-    permissions:
-      contents: write
-      pull-requests: read
 
 jobs:
   create-release:

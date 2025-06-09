@@ -59,11 +59,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create checksum file
+      - name: Zip release files
         run: |
           cd publish
-          sha256sum * > SHA256SUMS.txt
+          zip -r ../Adytum.zip .
           cd ..
+
+      - name: Create checksum file
+        run: |
+          sha256sum Adytum.zip > SHA256SUMS.txt
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -77,10 +81,11 @@ jobs:
 
             ## Checksums
             ```
-            $(cat publish/SHA256SUMS.txt)
+            $(cat SHA256SUMS.txt)
             ```
           files: |
-            ./publish/**
+            ./Adytum.zip
+            ./SHA256SUMS.txt
           draft: false
           prerelease: false
           make_latest: true

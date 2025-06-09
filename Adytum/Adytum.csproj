@@ -10,6 +10,8 @@
         <SelfContained>true</SelfContained>
 
         <InvariantGlobalization>true</InvariantGlobalization>
+
+        <AssemblyVersion>$(Version)</AssemblyVersion>
     </PropertyGroup>
 
     <ItemGroup>

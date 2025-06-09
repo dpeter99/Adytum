@@ -37,7 +37,7 @@ jobs:
           -p:PublishReadyToRun=true \
 
       - name: Build
-        run: dotnet build Adytum/Adytum.csproj --configuration Release --no-restore /p:Version=${{ steps.minver.outputs.version }}
+        run: dotnet build Adytum/Adytum.csproj --configuration Release --no-restore -p:Version=${{ steps.minver.outputs.version }}
 
       - name: Publish 
         run: |

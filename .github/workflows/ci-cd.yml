@@ -29,7 +29,7 @@ jobs:
 
       - name: Get version with MinVer
         id: minver
-        run: echo "version=$(dotnet build -t:MinVer -getProperty:MinVerVersion)" >> $GITHUB_OUTPUT
+        run: echo "version=$(dotnet build Adytum/Adytum.csproj -t:MinVer -getProperty:MinVerVersion)" >> $GITHUB_OUTPUT
         
       - name: Build and get version
         run: |

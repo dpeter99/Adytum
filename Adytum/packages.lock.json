@@ -44,6 +44,12 @@
         "resolved": "9.0.4",
         "contentHash": "k4ELPcopJ3Ow7l46z1OE2RFbsP+c4AvocAOaRx9++rQBNeSdEBmH2jopIAk3BMGGEEcOGvDSjvUiLobF8QMtKQ=="
       },
+      "MinVer": {
+        "type": "Direct",
+        "requested": "[6.0.0, )",
+        "resolved": "6.0.0",
+        "contentHash": "+/SsmiySsXJlvQLCGBqaZKNVt3s/Y/HbAdwtop7Km2CnuZbaScoqkWJEBQ5Cy9ebkn6kCYKrHsXgwrFdTgcb3g=="
+      },
       "Serilog": {
         "type": "Direct",
         "requested": "[4.2.0, )",

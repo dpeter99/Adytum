@@ -12,7 +12,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ env.FULL_VERSION }}
+      version: ${{ steps.minver.outputs.version }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -26,15 +26,14 @@ jobs:
 
       - name: Restore tools
         run: dotnet tool restore
+
+      - name: Get version with MinVer
+        id: minver
+        run: echo "version=$(dotnet build -t:MinVer -getProperty:MinVerVersion)" >> $GITHUB_OUTPUT
         
       - name: Build and get version
         run: |
-          # Build will automatically detect version using Directory.Build.props
-          CI=true dotnet build Adytum/Adytum.csproj --configuration Release -p:PublishReadyToRun=true
-          
-          # Extract version for release
-          FULL_VERSION=$(dotnet minver --tag-prefix v --verbosity error)
-          echo "FULL_VERSION=$FULL_VERSION" >> $GITHUB_ENV
+          dotnet build Adytum/Adytum.csproj --configuration Release -p:PublishReadyToRun=true
         
       - name: Publish
         run: |

@@ -21,7 +21,7 @@
     <Exec Command="dotnet tool restore" />
     
     <!-- Get version from MinVer -->
-    <Exec Command="dotnet minver --tag-prefix $(MinVerTagPrefix)" 
+    <Exec Command="dotnet minver --tag-prefix $(MinVerTagPrefix) --verbosity error" 
           ConsoleToMSBuild="true" 
           StandardOutputImportance="low">
       <Output TaskParameter="ConsoleOutput" PropertyName="MinVerVersion" />
@@ -51,5 +51,34 @@
     </PropertyGroup>
     
     <Message Text="Building version: $(Version)" Importance="high" />
+  </Target>
+
+  <!-- Set InformationalVersion for CI builds when version is explicitly provided -->
+  <Target Name="SetInformationalVersionForCI" 
+          BeforeTargets="BeforeBuild;GetAssemblyVersion" 
+          Condition="'$(CI)' == 'true' AND '$(Version)' != '' AND '$(InformationalVersion)' == ''">
+    
+    <!-- Get git commit hash for CI builds -->
+    <Exec Command="git rev-parse HEAD" 
+          ConsoleToMSBuild="true" 
+          StandardOutputImportance="low"
+          IgnoreExitCode="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="GitCommitHash" />
+    </Exec>
+    
+    <PropertyGroup>
+      <InformationalVersion Condition="'$(GitCommitHash)' != ''">$(Version)+$(GitCommitHash)</InformationalVersion>
+      <InformationalVersion Condition="'$(GitCommitHash)' == ''">$(Version)</InformationalVersion>
+      
+      <!-- Parse version components for AssemblyVersion (remove pre-release suffix) -->
+      <_VersionParts>$(Version.Split('-')[0])</_VersionParts>
+      <_Major>$(_VersionParts.Split('.')[0])</_Major>
+      <_Minor>$(_VersionParts.Split('.')[1])</_Minor>
+      <_Patch>$(_VersionParts.Split('.')[2])</_Patch>
+      <AssemblyVersion>$(_Major).$(_Minor).$(_Patch).0</AssemblyVersion>
+      <FileVersion>$(_Major).$(_Minor).$(_Patch).0</FileVersion>
+    </PropertyGroup>
+    
+    <Message Text="CI build version: $(InformationalVersion)" Importance="high" />
   </Target>
 </Project>

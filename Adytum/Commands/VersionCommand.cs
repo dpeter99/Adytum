@@ -8,7 +8,10 @@ public class VersionCommand
     [Command("version", Description = "Displays the application version information.")]
     public int Run()
     {
-        var version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "unknown";
+        var assembly = Assembly.GetExecutingAssembly();
+        var version = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? 
+                     assembly.GetName().Version?.ToString() ?? 
+                     "unknown";
         UI.ShowBanner($"Adytum version: {version}");
         return 0;
     }

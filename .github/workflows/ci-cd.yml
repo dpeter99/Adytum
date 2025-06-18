@@ -33,7 +33,7 @@ jobs:
           CI=true dotnet build Adytum/Adytum.csproj --configuration Release -p:PublishReadyToRun=true
           
           # Extract version for release
-          FULL_VERSION=$(dotnet minver --tag-prefix v)
+          FULL_VERSION=$(dotnet minver --tag-prefix v --verbosity error)
           echo "FULL_VERSION=$FULL_VERSION" >> $GITHUB_ENV
         
       - name: Publish

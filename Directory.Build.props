@@ -1,0 +1,55 @@
+<Project>
+  <PropertyGroup>
+    <!-- Enable automatic tool restore -->
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    
+    <!-- MinVer configuration -->
+    <MinVerTagPrefix>v</MinVerTagPrefix>
+    
+    <!-- Default versions if not set -->
+    <Version Condition="'$(Version)' == ''">0.0.0</Version>
+    <AssemblyVersion Condition="'$(AssemblyVersion)' == ''">0.0.0.0</AssemblyVersion>
+    <FileVersion Condition="'$(FileVersion)' == ''">0.0.0.0</FileVersion>
+  </PropertyGroup>
+
+  <!-- Auto-detect version using MinVer CLI -->
+  <Target Name="SetVersionFromMinVer" 
+          BeforeTargets="BeforeBuild;GetAssemblyVersion" 
+          Condition="'$(CI)' != 'true' AND '$(DisableMinVer)' != 'true'">
+    
+    <!-- Ensure tools are restored -->
+    <Exec Command="dotnet tool restore" />
+    
+    <!-- Get version from MinVer -->
+    <Exec Command="dotnet minver --tag-prefix $(MinVerTagPrefix)" 
+          ConsoleToMSBuild="true" 
+          StandardOutputImportance="low">
+      <Output TaskParameter="ConsoleOutput" PropertyName="MinVerVersion" />
+    </Exec>
+    
+    <!-- Parse version components -->
+    <PropertyGroup>
+      <Version>$(MinVerVersion)</Version>
+      <_VersionParts>$(MinVerVersion.Split('-')[0])</_VersionParts>
+      <_Major>$(_VersionParts.Split('.')[0])</_Major>
+      <_Minor>$(_VersionParts.Split('.')[1])</_Minor>
+      <_Patch>$(_VersionParts.Split('.')[2])</_Patch>
+      <AssemblyVersion>$(_Major).$(_Minor).$(_Patch).0</AssemblyVersion>
+      <FileVersion>$(_Major).$(_Minor).$(_Patch).0</FileVersion>
+    </PropertyGroup>
+    
+    <!-- Get git commit hash -->
+    <Exec Command="git rev-parse HEAD" 
+          ConsoleToMSBuild="true" 
+          StandardOutputImportance="low"
+          IgnoreExitCode="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="GitCommitHash" />
+    </Exec>
+    
+    <PropertyGroup Condition="'$(GitCommitHash)' != ''">
+      <InformationalVersion>$(Version)+$(GitCommitHash)</InformationalVersion>
+    </PropertyGroup>
+    
+    <Message Text="Building version: $(Version)" Importance="high" />
+  </Target>
+</Project>

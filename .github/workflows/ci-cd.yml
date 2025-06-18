@@ -12,7 +12,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.minver.outputs.version }}
+      version: ${{ env.FULL_VERSION }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -24,28 +24,24 @@ jobs:
         with:
           dotnet-version: '9.0.x'
 
-      - name: Install MinVer CLI
-        run: dotnet tool install --global minver-cli
-
-      - name: Get version with MinVer
-        id: minver
-        run: echo "version=$(minver)" >> $GITHUB_OUTPUT
-
-      - name: Restore dependencies
+      - name: Restore tools
+        run: dotnet tool restore
+        
+      - name: Build and get version
         run: |
-          dotnet restore Adytum/Adytum.csproj \
-          -p:PublishReadyToRun=true \
-
-      - name: Build
-        run: dotnet build Adytum/Adytum.csproj --configuration Release --no-restore -p:Version=${{ steps.minver.outputs.version }}
-
-      - name: Publish 
+          # Build will automatically detect version using Directory.Build.props
+          CI=true dotnet build Adytum/Adytum.csproj --configuration Release -p:PublishReadyToRun=true
+          
+          # Extract version for release
+          FULL_VERSION=$(dotnet minver --tag-prefix v)
+          echo "FULL_VERSION=$FULL_VERSION" >> $GITHUB_ENV
+        
+      - name: Publish
         run: |
           dotnet publish Adytum/Adytum.csproj \
             --configuration Release --no-build --output ./publish \
             -p:PublishSingleFile=true \
-            -p:PublishReadyToRun=true \
-            -p:Version=${{ steps.minver.outputs.version }}
+            -p:PublishReadyToRun=true
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

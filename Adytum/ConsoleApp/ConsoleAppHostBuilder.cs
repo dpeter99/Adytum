@@ -81,6 +81,8 @@ public class ConsoleAppHostBuilder : IHostApplicationBuilder
     {
         var host = _hostBuilder.Build();
 
+        _commandLineBuilder.UseHelp();
+        
         _commandLineBuilder.AddMiddleware((context =>
         {
             context.BindingContext.AddService(typeof(IHost), _ => host);
@@ -130,7 +132,6 @@ public class Reflector
             option.AddAlias("-"+shortName);            
         }
         
-        Console.WriteLine("Option:" + option);
         return option;
     }
 }
@@ -160,7 +161,6 @@ public class CommandLineConfigSource<T>(string path, string[] args, Command comm
     
     public IConfigurationProvider Build(IConfigurationBuilder builder)
     {
-        Console.WriteLine("CommandLineConfigSource.Build()");
         var value = this.Parse();
         return new CommandLineConfigProvider<T>(builder, path, value);
     }

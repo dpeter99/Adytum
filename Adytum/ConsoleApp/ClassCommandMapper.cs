@@ -75,8 +75,6 @@ public class ClassCommandMapper
             option.AddAlias("-"+shortName);            
         }
         
-                    
-        Console.WriteLine("Option:" + option);
         return option;
     }
 }

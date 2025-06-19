@@ -22,7 +22,6 @@ public class ConsoleAppHost: IHost
     public async Task Start(string[] args)
     {
         var a = _parser.Parse(args);
-        Console.WriteLine("Parsed");
         if (a.Errors.Any())
         {
             Console.WriteLine(string.Join(Environment.NewLine, a.Errors));
